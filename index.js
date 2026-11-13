@@ -79,9 +79,21 @@ app.get("/enquiries", async (req, res) => {
 app.get("/enquiry/:id", async (req, res) => {
     const id = req.params.id;
 
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({
+          message: "Invalid enquiry ID"
+        });
+      }
+
     const enquiry = await db
         .collection("enquiries")
         .findOne({ _id: new ObjectId(id) });
+
+        if (!enquiry) {
+            return res.status(404).json({
+              message: "Enquiry not found"
+            });
+          }
 
         res.json(enquiry);
 });
