@@ -97,3 +97,37 @@ app.get("/enquiry/:id", async (req, res) => {
 
         res.json(enquiry);
 });
+
+app.patch("/enquiry/:id", async (req, res) => {
+    const id = req.params.id;
+    const newStatus = req.body.status;
+  
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid enquiry ID"
+      });
+    }
+  
+    if (!newStatus) {
+      return res.status(400).json({
+        message: "Status is required"
+      });
+    }
+  
+    const result = await db
+      .collection("enquiries")
+      .updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status: newStatus } }
+      );
+  
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: "Enquiry not found"
+      });
+    }
+  
+    res.json({
+      message: "Enquiry status updated successfully"
+    });
+  });
