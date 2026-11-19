@@ -9,6 +9,14 @@ let db;
 const app = express();
 const PORT = 5000;
 
+const allowedStatuses = [
+    "New",
+    "Contacted",
+    "Quoted",
+    "Won",
+    "Lost"
+  ];
+
 async function connectToDatabase() {
     await client.connect();
 
@@ -113,6 +121,12 @@ app.patch("/enquiry/:id", async (req, res) => {
         message: "Status is required"
       });
     }
+
+    if (!allowedStatuses.includes(newStatus)) {
+        return res.status(400).json({
+          message: "Invalid status"
+        });
+      }
   
     const result = await db
       .collection("enquiries")
@@ -131,3 +145,30 @@ app.patch("/enquiry/:id", async (req, res) => {
       message: "Enquiry status updated successfully"
     });
   });
+
+  app.delete("/enquiry/:id", async (req, res) => {
+    const id = req.params.id;
+  
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid enquiry ID"
+      });
+    }
+  
+    const result = await db
+      .collection("enquiries")
+      .deleteOne({
+        _id: new ObjectId(id)
+      });
+  
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        message: "Enquiry not found"
+      });
+    }
+  
+    res.json({
+      message: "Enquiry deleted successfully"
+    });
+  });
+  
